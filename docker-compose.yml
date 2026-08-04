@@ -1,0 +1,92 @@
+# ============================================================
+# docker-compose.yml - Orquestador BASE de Merulink
+# ============================================================
+# Este es el archivo BASE, compartido por DEV y PROD.
+# Cada entorno usa su propio .env (.env.prod / .env.dev) que
+# define puertos, nombre de BD y volumen.
+#
+# ── CÓMO LEVANTAR CADA ENTORNO ─────────────────────────────
+#   PROD (imágenes compiladas, cambios SOLO al reconstruir):
+#     docker compose -f docker-compose.yml --env-file .env.prod up -d
+#
+#   DEV (código montado + Vite hot reload, junto a PROD):
+#     docker compose -p merulink-demo-dev -f docker-compose.yml \
+#       -f docker-compose.override.yml --env-file .env.dev up -d
+#
+# Para detener uno:  docker compose -p <nombre> down
+# ============================================================
+
+services:
+
+  # ── BASE DE DATOS ───────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-merulink}
+      POSTGRES_USER: ${DB_USERNAME:-merulink}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      # Volumen separado por entorno:
+      #   PROD -> postgres_data_demo (datos actuales)
+      #   DEV  -> postgres_data_dev  (BD de desarrollo aparte)
+      - postgres_data_${DB_SUFFIX:-demo}:/var/lib/postgresql/data
+    ports:
+      # Puerto externo distinto por entorno (5434 prod / 5435 dev)
+      - "${DB_PORT_EXTERNAL:-5434}:5432"
+    healthcheck:
+      # Verifica que PostgreSQL acepte conexiones
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-merulink} -d ${DB_DATABASE:-merulink}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── BACKEND (Laravel API) ───────────────────────────────
+  backend:
+    build:
+      context: ./merulink-back
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      # Inyecta el .env del entorno (.env.prod o .env.dev)
+      - ${ENV_FILE:-.env}
+    depends_on:
+      # Solo arranca cuando la BD esté sana
+      db:
+        condition: service_healthy
+    # Sin container_name: cada proyecto Docker nombra sus contenedores
+    # por sí solo (prod: merulink-demo-* / dev: merulink-demo-dev-*),
+    # evitando choques entre entornos.
+
+  # ── FRONTEND (React) ────────────────────────────────────
+  frontend:
+    build:
+      context: ./merulink-front
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      # Puerto externo distinto por entorno (8082 prod / 8083 dev)
+      - "${FRONTEND_PORT:-8082}:80"
+    depends_on:
+      - backend
+
+  # ── QUEUE WORKER (Procesa colas de Laravel) ─────────────
+  queue:
+    build:
+      context: ./merulink-back
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # En vez de iniciar Nginx+PHP-FPM, ejecuta el worker de colas
+    command: php artisan queue:work --sleep=3 --tries=3 --timeout=0
+    env_file:
+      - ${ENV_FILE:-.env}
+    depends_on:
+      db:
+        condition: service_healthy
+
+# ── VOLÚMENES BD (uno por entorno) ───────────────────────────
+volumes:
+  postgres_data_demo:
+    # PROD: conserva los datos actuales de la base de datos
+  postgres_data_dev:
+    # DEV: base de datos de desarrollo, aislada de PROD

@@ -1,0 +1,40 @@
+# ============================================================
+# docker-compose.override.yml - Overrides de DESARROLLO
+# ============================================================
+# Solo se usa en DEV (se lista junto al base con -f).
+# Cambios al instante + Vite hot reload.
+#
+# USO junto a PROD (sin chocar):
+#   docker compose -p merulink-demo-dev -f docker-compose.yml \
+#     -f docker-compose.override.yml --env-file .env.dev up -d
+# ============================================================
+
+services:
+
+  # ── BACKEND: código local (cambios inmediatos) ───
+  backend:
+    volumes:
+      - ./merulink-back:/var/www/html
+      # Volumen anónimo para conservar el vendor de la imagen
+      - /var/www/html/vendor
+
+  # ── QUEUE: igual que backend ────────────────────────────
+  queue:
+    volumes:
+      - ./merulink-back:/var/www/html
+      - /var/www/html/vendor
+
+  # ── FRONTEND: Vite dev server (hot reload) ──────────────
+  frontend:
+    build:
+      context: ./merulink-front
+      dockerfile: Dockerfile.dev
+    # Reemplaza el mapeo de puerto del base (que era para Nginx)
+    # por el puerto del Vite dev server
+    ports: !override
+      # Vite dev server con HMR (Hot Module Replacement)
+      - "8083:5173"
+    volumes:
+      - ./merulink-front:/app
+      # Volumen anónimo para conservar node_modules de la imagen
+      - /app/node_modules
