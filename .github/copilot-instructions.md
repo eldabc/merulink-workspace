@@ -126,3 +126,62 @@ Los botones del frontend (`merulink-front`) tienen un estilo base global definid
 {/* Incorrecto: redefinir el estilo base a mano con muchas utilidades */}
 <button type="button" className="bg-[#1a1a1a] rounded-lg px-3 py-2 ..." />
 ```
+
+---
+
+# Estándar de Labels (Frontend)
+
+Todos los labels de formulario del frontend (`merulink-front`) deben usar el componente `LabelFieldForm` como estilo por defecto.
+
+## Regla
+
+- Todo **nuevo** label de un formulario debe usar el componente `LabelFieldForm` (ubicado en `src/components/Shared/LabelFieldForm.jsx`).
+- El componente ya incluye el estilo y la estructura base (texto, tamaño, color, margen y marca de campo requerido).
+- Props:
+  - `field`: texto del label (requerido).
+  - `simbol`: símbolo que se muestra en rojo para campos obligatorios (ej: `"*"`). Omitir si el campo no es obligatorio.
+  - `dinamicClasses`: clases adicionales opcionales para **modificar el estilo base** si el componente lo necesita (por ejemplo, en un modal la letra debe verse más pequeña → pasar una clase como `text-sm`).
+- No se deben escribir `<label>` con utilidades a mano ni repetir el estilo del componente en componentes nuevos.
+
+```jsx
+import LabelFieldForm from '../Shared/LabelFieldForm';
+
+{/* Correcto: campo obligatorio */}
+<LabelFieldForm field="Nombre" simbol="*" />
+
+{/* Correcto: campo opcional (sin símbolo) */}
+<LabelFieldForm field="Dirección" />
+
+{/* Correcto: con clases extra si se necesita algo puntual (ej: letra más pequeña en un modal) */}
+<LabelFieldForm field="Cédula" simbol="*" dinamicClasses="text-sm" />
+
+{/* Incorrecto: reescribir el estilo del label a mano */}
+<label className="block text-lg font-medium text-gray-300 mt-1">Nombre: <span className="text-red-400">*</span></label>
+```
+
+---
+
+# Estándar de Errores de Formulario (Frontend)
+
+Todos los mensajes de error de los formularios del frontend (`merulink-front`) deben mostrarse con el componente `ErrorMessage` como estilo por defecto.
+
+## Regla
+
+- Todo **nuevo** mensaje de error de validación debe usar el componente `ErrorMessage` (ubicado en `src/components/Shared/ErrorMessage.jsx`).
+- El componente ya incluye el estilo base (texto rojo pequeño con margen superior) y recibe una única prop:
+  - `msg`: texto del error a mostrar (requerido).
+- Se usa normalmente junto a `react-hook-form` para mostrar `errors.<campo>.message`.
+- No se deben escribir `<p>` de error a mano repitiendo el estilo ni usar estilos inline.
+
+```jsx
+import ErrorMessage from '../Shared/ErrorMessage';
+
+{/* Correcto: mostrar error de validación de react-hook-form */}
+{errors.email && <ErrorMessage msg={errors.email.message} />}
+
+{/* Correcto: error condicional con mensaje directo */}
+{errorMsg && <ErrorMessage msg={errorMsg} />}
+
+{/* Incorrecto: escribir el error a mano */}
+{errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
+```
