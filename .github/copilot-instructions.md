@@ -185,3 +185,58 @@ import ErrorMessage from '../Shared/ErrorMessage';
 {/* Incorrecto: escribir el error a mano */}
 {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
 ```
+
+---
+
+# Estándar de Botón Cancelar en Modales (Frontend)
+
+Los botones para cancelar/cerrar **modales** del frontend (`merulink-front`) deben usar el componente `ButtonCancel` como estilo por defecto.
+
+## Regla
+
+- Todo **nuevo** botón de cancelar **dentro de un modal** debe usar el componente `ButtonCancel` (ubicado en `src/components/Shared/ButtonCancel.jsx`).
+- El componente ya incluye el estilo base (texto gris, hover a blanco, padding y tamaño de fuente).
+- Props:
+  - `onClose`: función que cierra el modal (requerida).
+  - `text`: texto del botón (opcional, por defecto `"Cancelar"`).
+- No se deben escribir `<button>` de cancelar a mano dentro de un modal repitiendo el estilo ni usar estilos inline.
+- Esta regla aplica **solo a modales**; los botones de cancelar de formularios/páginas siguen el estándar general de botones.
+
+```jsx
+import ButtonCancel from '../Shared/ButtonCancel';
+
+{/* Correcto: botón de cancelar por defecto */}
+<ButtonCancel onClose={onClose} />
+
+{/* Correcto: con texto personalizado */}
+<ButtonCancel onClose={onClose} text="Volver" />
+
+{/* Incorrecto: escribir el botón de cancelar a mano */}
+<button onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors">Cancelar</button>
+```
+
+---
+
+# Estándar de Iconos de Loading (Frontend)
+
+Todos los spinners/indicadores de carga del frontend (`merulink-front`) deben usar el componente `LoadingSpinner` como estilo por defecto.
+
+## Regla
+
+- Todo **nuevo** spinner/indicador de carga debe usar el componente `LoadingSpinner` (ubicado en `src/components/Shared/LoadingSpinner.jsx`).
+- El componente ya incluye el estilo base (icono `Loader` de `lucide-react` con `animate-spin`) y recibe una única prop opcional:
+  - `className`: clases extra para el contenedor (por defecto `py-8`).
+- No se deben escribir spinners a mano con iconos de `lucide-react` (`Loader`, `Loader2`, etc.) en componentes nuevos.
+
+```jsx
+import LoadingSpinner from '../Shared/LoadingSpinner';
+
+{/* Correcto: por defecto */}
+<LoadingSpinner />
+
+{/* Correcto: sin padding extra si ya está dentro de un contenedor */}
+<LoadingSpinner className="py-0" />
+
+{/* Incorrecto: escribir el spinner a mano con lucide-react */}
+<Loader2 className="w-6 h-6 animate-spin" />
+```
