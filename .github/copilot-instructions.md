@@ -140,7 +140,7 @@ Todos los labels de formulario del frontend (`merulink-front`) deben usar el com
 - Props:
   - `field`: texto del label (requerido).
   - `simbol`: símbolo que se muestra en rojo para campos obligatorios (ej: `"*"`). Omitir si el campo no es obligatorio.
-  - `dinamicClasses`: clases adicionales opcionales para **modificar el estilo base** si el componente lo necesita (por ejemplo, en un modal la letra debe verse más pequeña → pasar una clase como `text-sm`).
+  - `dynamicClasses`: clases adicionales opcionales para **modificar el estilo base** si el componente lo necesita (por ejemplo, en un modal la letra debe verse más pequeña → pasar una clase como `text-sm`).
 - No se deben escribir `<label>` con utilidades a mano ni repetir el estilo del componente en componentes nuevos.
 
 ```jsx
@@ -153,7 +153,7 @@ import LabelFieldForm from '../Shared/LabelFieldForm';
 <LabelFieldForm field="Dirección" />
 
 {/* Correcto: con clases extra si se necesita algo puntual (ej: letra más pequeña en un modal) */}
-<LabelFieldForm field="Cédula" simbol="*" dinamicClasses="text-sm" />
+<LabelFieldForm field="Cédula" simbol="*" dynamicClasses="text-sm" />
 
 {/* Incorrecto: reescribir el estilo del label a mano */}
 <label className="block text-lg font-medium text-gray-300 mt-1">Nombre: <span className="text-red-400">*</span></label>
