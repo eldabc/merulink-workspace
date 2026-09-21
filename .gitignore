@@ -1,6 +1,8 @@
 merulink-back
 merulink-front
 
+nul
+
 .env
 .env.prod
 .env.dev
